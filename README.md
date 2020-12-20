@@ -1,10 +1,3 @@
-
-1. Discuss the purpose of this database in context of the startup, Sparkify, and their analytical goals.
-2. State and justify your database schema design and ETL pipeline.
-[Optional] Provide example queries and results for song play ana
-
-
-
 ### To help the company to make who store data in S3, I will download song and log data from S3 and tranform the data into Star shema before loading them into redshift. By combining the datasets, data analysts can perform the queries to get insightful data in a more effectively. 
 
 ### First I create redshit clusters with local jupyter notebook with folloing steps
