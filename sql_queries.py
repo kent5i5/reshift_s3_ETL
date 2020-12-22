@@ -59,7 +59,8 @@ CREATE TABLE IF NOT EXISTS dimUser(
     first_name varchar(200)  , 
     last_name varchar(200)  , 
     gender varchar(25)  , 
-    level varchar(25));
+    level varchar(25),
+    PRIMARY KEY(user_id));
 """)
 
 song_table_create = ("""
@@ -68,7 +69,8 @@ CREATE TABLE IF NOT EXISTS dimSong(
     title varchar(200) not null, 
     artist_id varchar(100) not null, 
     year varchar(25) not null, 
-    duration float not null);
+    duration float not null,
+    PRIMARY KEY(song_id));
 """)
 
 artist_table_create = ("""
@@ -77,7 +79,8 @@ CREATE TABLE IF NOT EXISTS dimArtist(
     name varchar(200) NOT NULL, 
     location varchar(200) , 
     latitude float, 
-    longitude float);
+    longitude float,
+    PRIMARY KEY(artist_id));
 """)
 
 time_table_create = ("""
@@ -88,7 +91,8 @@ CREATE TABLE IF NOT EXISTS  dimTime(
     week smallint not null, 
     month smallint not null, 
     year smallint not null, 
-    weekday varchar(19)  not null);
+    weekday varchar(19)  not null,
+    PRIMARY KEY(start_time));
 """)
 
 
@@ -98,11 +102,12 @@ CREATE TABLE IF NOT EXISTS songplays(
     start_time timestamp not null, 
     user_id varchar(100) not null, 
     level varchar(10) not null, 
-    song_id varchar(100) not null, 
-    artist_id varchar(100)  not null, 
+    song_id varchar(100), 
+    artist_id varchar(100), 
     session_id bigint not null, 
     location varchar(100), 
-    user_agent varchar(200) not null);
+    user_agent varchar(200) not null,
+    PRIMARY KEY(songplay_id));
 
 """)
 
@@ -130,7 +135,7 @@ SELECT '1970-01-01'::date + ts/1000 * interval '1 second' as ts_datetime,
 user_id,level,song_id,artist_id,sessionId,location,userAgent
 FROM (SELECT se.ts, se.user_id, se.level, sa.song_id, sa.artist_id, se.sessionId, se.location, se.userAgent 
 FROM staging_events AS se
-JOIN (SELECT dimsong.song_id, dimartist.artist_id, dimsong.title, dimartist.name,dimsong.duration FROM dimsong JOIN dimartist ON dimsong.artist_id = dimartist.artist_id) AS sa
+FULL OUTER JOIN (SELECT dimsong.song_id, dimartist.artist_id, dimsong.title, dimartist.name,dimsong.duration FROM dimsong JOIN dimartist ON dimsong.artist_id = dimartist.artist_id) AS sa
 ON (sa.title = se.song
 AND sa.name = se.artist
 AND sa.duration = se.length)
@@ -139,7 +144,8 @@ WHERE se.page = 'NextSong');
 
 user_table_insert = ("""
 INSERT INTO dimUser(user_id, first_name, last_name, gender , level)
-select user_id, first_name, last_name, gender , level  from staging_events;
+select user_id, first_name, last_name, gender , level  from staging_events
+WHERE page = 'NextSong';
 """)
 
 song_table_insert = ("""
@@ -157,7 +163,8 @@ time_table_insert = ("""
 INSERT INTO dimTime(start_time, hour, day, week, month, year, weekday)
 select  ts_datetime, extract(HOUR FROM ts_datetime) as hour, extract(DAY FROM ts_datetime) as day, extract(week from ts_datetime) as week, extract(MONTH FROM ts_datetime) as month, extract(YEAR FROM ts_datetime) as year, extract(WEEKDAY FROM ts_datetime) as weekday FROM 
 (select distinct ts,'1970-01-01'::date + ts/1000 * interval '1 second' as ts_datetime
-FROM staging_events);
+FROM staging_events
+WHERE page = 'NextSong');
 """)
 
 # QUERY LISTS
@@ -170,16 +177,16 @@ create_table_queries = [
                         time_table_create,
                         songplay_table_create]
 drop_table_queries = [
-    staging_events_table_drop, staging_songs_table_drop, 
-    songplay_table_drop, 
-    user_table_drop, 
-    song_table_drop, artist_table_drop, 
-    time_table_drop]
+                        staging_events_table_drop, staging_songs_table_drop, 
+                        songplay_table_drop, 
+                        user_table_drop, 
+                        song_table_drop, artist_table_drop, 
+                        time_table_drop]
 
 copy_table_queries = [staging_events_copy, staging_songs_copy]
     
 insert_table_queries = [
-    songplay_table_insert, 
-    user_table_insert, song_table_insert, artist_table_insert, 
-    time_table_insert
+                        songplay_table_insert, 
+                        user_table_insert, song_table_insert, artist_table_insert, 
+                        time_table_insert
 ]

@@ -4,6 +4,7 @@
 
 1. Create an iAM role with aws redshift database full and S3 bucket access
 2. Create an Redshift with following python function 
+        
         redshift.create_cluster(        
             #HW
             ClusterType=DWH_CLUSTER_TYPE,
@@ -45,9 +46,15 @@
 
         ts_datetime, extract(HOUR FROM ts_datetime) as hour, extract(DAY FROM ts_datetime) as day, extract(week from ts_datetime) as week, extract(MONTH FROM ts_datetime) as month, extract(YEAR FROM ts_datetime) as year, extract(WEEKDAY FROM ts_datetime) as weekday 
 
+***For songplays table, I used FULL OUTER JOIN key word to combine selection of songtables columns for songplays table insertion query. This way we keep all data as long as the song name, artist name, and duration matched.   ***
+
+![songplyas table result](/doc/staging_songs_table_result.png)
+
+
 ##### Fact Table Reference
 
 * songplays - records in event data associated with song plays i.e. records with page NextSong
+    
     > songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent
 
 ##### Dimension Tables Reference
@@ -61,7 +68,7 @@
 * time - timestamps of records in songplays broken down into specific units
     > start_time, hour, day, week, month, year, weekday
 
-##### Other Info:
+##### Resource Info:
 
 
 Million Song Dataset
