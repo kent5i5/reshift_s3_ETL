@@ -48,7 +48,7 @@
 
 ***For songplays table, I used FULL OUTER JOIN key word to combine selection of songtables columns for songplays table insertion query. This way we keep all data as long as the song name, artist name, and duration matched.   ***
 
-![songplyas table result](/doc/staging_songs_table_result.png)
+![songplyas table result](/doc/songplays_table_result.png)
 
 
 ##### Fact Table Reference
