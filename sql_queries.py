@@ -162,7 +162,7 @@ select DISTINCT artist_id, artist_name, artist_location, artist_latitude, artist
 time_table_insert = ("""
 INSERT INTO dimTime(start_time, hour, day, week, month, year, weekday)
 select DISTINCT ts_datetime, extract(HOUR FROM ts_datetime) as hour, extract(DAY FROM ts_datetime) as day, extract(week from ts_datetime) as week, extract(MONTH FROM ts_datetime) as month, extract(YEAR FROM ts_datetime) as year, extract(WEEKDAY FROM ts_datetime) as weekday FROM 
-(select distinct start_time,'1970-01-01'::date + start_time/1000 * interval '1 second' as ts_datetime
+(select start_time as ts_datetime
 FROM songplays);
 """)
 
