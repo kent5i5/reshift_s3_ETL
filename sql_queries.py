@@ -131,11 +131,11 @@ region 'us-west-2';
 
 songplay_table_insert = ("""
 INSERT INTO songplays (start_time,user_id,level,song_id,artist_id,session_id,location,user_agent) 
-SELECT '1970-01-01'::date + ts/1000 * interval '1 second' as ts_datetime,
+SELECT DISTINCT '1970-01-01'::date + ts/1000 * interval '1 second' as ts_datetime,
 user_id,level,song_id,artist_id,sessionId,location,userAgent
-FROM (SELECT se.ts, se.user_id, se.level, sa.song_id, sa.artist_id, se.sessionId, se.location, se.userAgent 
+FROM (SELECT DISTINCT se.ts, se.user_id, se.level, sa.song_id, sa.artist_id, se.sessionId, se.location, se.userAgent 
 FROM staging_events AS se
-FULL OUTER JOIN (SELECT dimsong.song_id, dimartist.artist_id, dimsong.title, dimartist.name,dimsong.duration FROM dimsong JOIN dimartist ON dimsong.artist_id = dimartist.artist_id) AS sa
+FULL OUTER JOIN (SELECT DISTINCT dimsong.song_id, dimartist.artist_id, dimsong.title, dimartist.name,dimsong.duration FROM dimsong JOIN dimartist ON dimsong.artist_id = dimartist.artist_id) AS sa
 ON (sa.title = se.song
 AND sa.name = se.artist
 AND sa.duration = se.length)
@@ -144,27 +144,26 @@ WHERE se.page = 'NextSong');
 
 user_table_insert = ("""
 INSERT INTO dimUser(user_id, first_name, last_name, gender , level)
-select user_id, first_name, last_name, gender , level  from staging_events
+select DISTINCT user_id, first_name, last_name, gender , level  from staging_events
 WHERE page = 'NextSong';
 """)
 
 song_table_insert = ("""
 INSERT INTO dimSong(song_id, title, artist_id , year, duration)
-select song_id, title, artist_id , year, duration from staging_songs;
+select DISTINCT song_id, title, artist_id , year, duration from staging_songs;
 """)
 
 artist_table_insert = ("""
 INSERT INTO dimArtist(artist_id, name, location, latitude, longitude)
-select artist_id, artist_name, artist_location, artist_latitude, artist_longitude from staging_songs;
+select DISTINCT artist_id, artist_name, artist_location, artist_latitude, artist_longitude from staging_songs;
 
 """)
 
 time_table_insert = ("""
 INSERT INTO dimTime(start_time, hour, day, week, month, year, weekday)
-select  ts_datetime, extract(HOUR FROM ts_datetime) as hour, extract(DAY FROM ts_datetime) as day, extract(week from ts_datetime) as week, extract(MONTH FROM ts_datetime) as month, extract(YEAR FROM ts_datetime) as year, extract(WEEKDAY FROM ts_datetime) as weekday FROM 
-(select distinct ts,'1970-01-01'::date + ts/1000 * interval '1 second' as ts_datetime
-FROM staging_events
-WHERE page = 'NextSong');
+select DISTINCT ts_datetime, extract(HOUR FROM ts_datetime) as hour, extract(DAY FROM ts_datetime) as day, extract(week from ts_datetime) as week, extract(MONTH FROM ts_datetime) as month, extract(YEAR FROM ts_datetime) as year, extract(WEEKDAY FROM ts_datetime) as weekday FROM 
+(select distinct start_time,'1970-01-01'::date + start_time/1000 * interval '1 second' as ts_datetime
+FROM songplays);
 """)
 
 # QUERY LISTS
